@@ -36,22 +36,23 @@ O contexto de gestão comercial foi escolhido por ser rico em situações natura
 
 ## 3. Modelagem de Classes
 
-O sistema é composto por **12 classes funcionais** (excluindo enums e constantes), organizadas em três hierarquias de herança.
+O sistema é composto por **12 classes funcionais + 1 interface** (excluindo enums e constantes), organizadas em hierarquias de herança e contrato de interface.
 
-| Classe | Responsabilidade | Subclasses / Filhas |
+| Tipo | Nome | Responsabilidade |
 |---|---|---|
-| `Pessoa` (abstrata) | Entidade base com `nome` e `cpf` | `Cliente`, `Funcionario` |
-| `Cliente` | Herda `Pessoa`; adiciona `idCliente`, `dataCadastro`, histórico de compras | — |
-| `Funcionario` (abstrata) | Herda `Pessoa`; adiciona `idFuncionario` e `salarioBase` | `Vendedor`, `Gerente` |
-| `Vendedor` | Herda `Funcionario`; atributo `comissaoPorVenda` e método `calcularComissao()` | — |
-| `Gerente` | Herda `Funcionario`; atributo `bonusMensal` e método `calcularBonificacao()` | — |
-| `Produto` (abstrata) | `id`, `nome`, `precoVenda`, `quantidadeEstoque`; método abstrato `calcularDesconto()` | `ProdutoEletronico`, `ProdutoAlimenticio` |
-| `ProdutoEletronico` | Herda `Produto`; adiciona `garantiaMeses`; desconto progressivo por quantidade | — |
-| `ProdutoAlimenticio` | Herda `Produto`; adiciona `dataValidade`; bloqueia venda se vencido | — |
-| `Fornecedor` | `cnpj`, `nomeFantasia`; não herda `Pessoa` (CNPJ ≠ CPF) | — |
-| `ItemVenda` | Produto vendido + quantidade + `precoUnitarioSalvo`; calcula subtotal | — |
-| `Venda` | Agrega `ItemVenda`, `Cliente` e `Funcionario`; estado dinâmico; calcula total | — |
-| `GerenciadorDados<T>` | Genérico: CRUD em memória + persistência em arquivo JSON | — |
+| Interface | `CalculadoraDesconto` | Contrato `calcularDesconto(double valor)` — implementado por produtos que concedem desconto |
+| Abstrata | `Pessoa` | Entidade base com `nome` e `cpf` |
+| Concreta | `Cliente` | Herda `Pessoa`; adiciona `idCliente`, `dataCadastro` |
+| Abstrata | `Funcionario` | Herda `Pessoa`; adiciona `idFuncionario` e `salarioBase` |
+| Concreta | `Vendedor` | Herda `Funcionario`; atributo `comissaoPorVenda`; `calcularRemuneracao()` por comissão |
+| Concreta | `Gerente` | Herda `Funcionario`; atributo `bonusMensal`; `calcularRemuneracao()` fixo |
+| Abstrata | `Produto` | `id`, `nome`, `precoVenda`, `quantidadeEstoque` |
+| Concreta | `ProdutoEletronico` | Herda `Produto`, implementa `CalculadoraDesconto`; `garantiaMeses`; desconto progressivo por quantidade |
+| Concreta | `ProdutoAlimenticio` | Herda `Produto`, implementa `CalculadoraDesconto`; `dataValidade`; desconto por proximidade do vencimento; bloqueia venda se vencido |
+| Concreta | `Fornecedor` | `cnpj`, `nomeFantasia`; não herda `Pessoa` (CNPJ ≠ CPF) |
+| Concreta | `ItemVenda` | Produto vendido + quantidade + `precoUnitarioSalvo`; calcula subtotal |
+| Concreta | `Venda` | Agrega `ItemVenda`, `Cliente` e `Funcionario`; estado dinâmico; calcula total |
+| Genérica | `GerenciadorDados<T>` | CRUD em memória + persistência em arquivo JSON |
 
 **Hierarquias principais:**
 
@@ -63,8 +64,11 @@ Pessoa (abstrata)
     └── Gerente
 
 Produto (abstrata)
-├── ProdutoEletronico
-└── ProdutoAlimenticio
+├── ProdutoEletronico  implements CalculadoraDesconto
+└── ProdutoAlimenticio implements CalculadoraDesconto
+
+«interface» CalculadoraDesconto
+└── calcularDesconto(double valor): double
 ```
 
 ---
@@ -73,12 +77,12 @@ Produto (abstrata)
 
 O sistema implementa **duas situações de polimorfismo** vinculadas diretamente a regras de negócio. Em ambos os casos, as classes filhas possuem comportamentos e atributos próprios que justificam sua existência.
 
-| # | Método Polimórfico | Classe Base | Comportamento por Subtipo |
+| # | Método Polimórfico | Mecanismo | Comportamento por Subtipo |
 |---|---|---|---|
-| 1 | `calcularDesconto(double valor)` | `Produto` (abstrata) | `ProdutoEletronico` aplica desconto progressivo por quantidade; `ProdutoAlimenticio` sempre retorna `0.0` (proibido descontar perecíveis) |
-| 2 | `calcularRemuneracao(List<Venda> vendas)` | `Funcionario` (abstrata) | `Vendedor` soma comissão percentual sobre cada venda finalizada; `Gerente` retorna `salarioBase + bonusMensal` fixo |
+| 1 | `calcularDesconto(double valor)` | Interface `CalculadoraDesconto` | `ProdutoEletronico`: desconto progressivo por quantidade (5% para 3–5 unidades, 10% para 6+, com teto). `ProdutoAlimenticio`: desconto por proximidade da data de validade, com teto — quanto mais perto de vencer, maior o desconto |
+| 2 | `calcularRemuneracao(List<Venda> vendas)` | Herança de `Funcionario` | `Vendedor` soma comissão percentual sobre cada venda finalizada; `Gerente` retorna `salarioBase + bonusMensal` fixo |
 
-> **Obs.:** Os métodos polimórficos alteram o resultado financeiro da operação, não apenas a exibição — garantindo relevância ao contexto do sistema.
+> **Obs.:** Ambos os métodos são polimorfismo genuíno — cada subtipo tem uma lógica real e distinta que impacta o resultado financeiro. A escolha de interface para `calcularDesconto` (em vez de método abstrato em `Produto`) demonstra dois mecanismos de polimorfismo em Java no mesmo projeto: herança e contrato de interface.
 
 ---
 
@@ -90,7 +94,7 @@ O sistema implementa **duas situações de polimorfismo** vinculadas diretamente
 | RN-02 | Produto vencido | `ProdutoAlimenticio` bloqueia adição à venda se a `dataValidade` for anterior à data atual. Lança `ProdutoVencidoException`. |
 | RN-03 | Transição de estado da Venda | Venda segue o fluxo `ABERTA → FINALIZADA → CANCELADA`. Não é possível cancelar uma venda já finalizada. |
 | RN-04 | Cálculo de remuneração | `Vendedor` recebe comissão percentual sobre o total das suas vendas finalizadas. `Gerente` recebe bônus mensal fixo acumulado. |
-| RN-05 | Desconto por quantidade | `ProdutoEletronico` aplica desconto progressivo: 5% para 3–5 unidades, 10% para 6+. `ProdutoAlimenticio` não concede desconto. |
+| RN-05 | Desconto progressivo | `ProdutoEletronico`: 5% para 3–5 unidades, 10% para 6+, com teto. `ProdutoAlimenticio`: desconto por proximidade do vencimento, com teto — ambos via interface `CalculadoraDesconto`. |
 | RN-06 | CPF duplicado | O sistema rejeita cadastro de `Cliente` ou `Funcionario` com CPF já registrado, lançando `CpfDuplicadoException`. |
 
 ---
@@ -173,7 +177,7 @@ A classe `GerenciadorDados<T>` é responsável por salvar e carregar os dados de
 | Responsável | Escopo |
 |---|---|
 | Membro 1 | Entidades base: `Pessoa`, `Cliente`, `Funcionario` (abstrata), `Vendedor`, `Gerente` · Exceções personalizadas · CPF duplicado (RN-06) |
-| Membro 2 | `Produto` (abstrata), `ProdutoEletronico`, `ProdutoAlimenticio`, `Fornecedor`, `ItemVenda` · Regras RN-01, RN-02 e RN-05 |
+| Membro 2 | Interface `CalculadoraDesconto` · `Produto` (abstrata), `ProdutoEletronico`, `ProdutoAlimenticio`, `Fornecedor`, `ItemVenda` · Regras RN-01, RN-02 e RN-05 |
 | Membro 3 | `Venda` com estado dinâmico (RN-03) · `GerenciadorDados<T>` com persistência em JSON · Menu principal e integração no terminal |
 
 > Todos os membros devem contribuir com commits no repositório GitHub. O diagrama UML é responsabilidade coletiva.

@@ -55,6 +55,8 @@ java -cp out:lib/gson.jar Main
 shop-manager/
 ├── src/
 │   ├── Main.java
+│   ├── interfaces/
+│   │   └── CalculadoraDesconto.java
 │   ├── model/
 │   │   ├── Pessoa.java
 │   │   ├── Cliente.java
@@ -108,8 +110,11 @@ Pessoa (abstrata)
     └── Gerente
 
 Produto (abstrata)
-├── ProdutoEletronico
-└── ProdutoAlimenticio
+├── ProdutoEletronico  implements CalculadoraDesconto
+└── ProdutoAlimenticio implements CalculadoraDesconto
+
+«interface» CalculadoraDesconto
+└── calcularDesconto(double valor): double
 ```
 
 O diagrama UML completo está em [`docs/DiagramaUML.png`](docs/DiagramaUML.png).
