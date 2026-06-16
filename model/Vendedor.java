@@ -12,12 +12,13 @@ public class Vendedor extends Funcionario {
     }
 
     public float calcularComissao() {
-        // A lógica da fórmula vai aqui dentro depois
-        return 0.0f; 
+        return this.comissaoPorVenda; 
     }
 
     public float calcularRemuneracao(List<Venda> vendas) {
-        // A lógica de somar o salário base + comissões vai aqui depois
+        if (vendas == null || vendas.isEmpty()) {
+            return getSalarioBase();
+        }
         return getSalarioBase() + calcularComissao();
     }
 }

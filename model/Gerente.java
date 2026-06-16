@@ -12,12 +12,10 @@ public class Gerente extends Funcionario {
     }
 
     public float calcularBonificacao() {
-        // A lógica do bônus vai aqui dentro depois
         return this.bonusMensal;
     }
 
     public float calcularRemuneracao(List<Venda> vendas) {
-        // Gerente recebe Salário Base + Bônus Fixo
         return getSalarioBase() + calcularBonificacao();
     }
 }
