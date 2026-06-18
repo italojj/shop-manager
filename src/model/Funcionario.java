@@ -1,3 +1,4 @@
+package model;
 public abstract class Funcionario extends Pessoa {
     private int idFuncionario;
     private float salarioBase; 

@@ -1,3 +1,4 @@
+package exception;
 public class ProdutoVencidoException extends Exception {
     
     public ProdutoVencidoException(String mensagem) {
