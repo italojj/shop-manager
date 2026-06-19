@@ -11,7 +11,7 @@ A aplicação cobre os principais conceitos de Programação Orientada a Objetos
 | Membro | GitHub |
 |---|---|
 | Italo | [@italojj](https://github.com/italojj) |
-| Jonas | — |
+| Jonas | [@ojonassilva](https://github.com/ojonassilva) |
 | William | — |
 
 ---
