@@ -6,6 +6,7 @@ public abstract class Produto {
     private String nome;
     private double preco;
     private int quantidadeEstoque;
+    private int quantidadeAtual;
     private Fornecedor fornecedor;
 
     public Produto(int id, String nome, double preco, int quantidadeEstoque, Fornecedor fornecedor) {
@@ -20,6 +21,7 @@ public abstract class Produto {
         this.preco = preco;
         this.quantidadeEstoque = quantidadeEstoque;
         this.fornecedor = fornecedor;
+        this.quantidadeAtual = 0;
     }
 
     public int getId() {
@@ -62,6 +64,17 @@ public abstract class Produto {
 
     public void setFornecedor(Fornecedor fornecedor) {
         this.fornecedor = fornecedor;
+    }
+
+    public int getQuantidadeAtual() {
+        return quantidadeAtual;
+    }
+
+    public void setQuantidadeAtual(int quantidadeAtual) {
+        if (quantidadeAtual < 0) {
+            throw new IllegalArgumentException("Quantidade atual não pode ser negativa.");
+        }
+        this.quantidadeAtual = quantidadeAtual;
     }
 
     public boolean temEstoqueSuficiente(int quantidade) {
