@@ -4,6 +4,8 @@ import interfaces.CalculadoraDesconto;
 
 public class ProdutoEletronico extends Produto implements CalculadoraDesconto {
 
+    private static final int TETO_DESCONTO = 10;
+
     private String marca;
     private int garantiaMeses;
 
@@ -31,19 +33,24 @@ public class ProdutoEletronico extends Produto implements CalculadoraDesconto {
     }
 
     @Override
-    public double calcularDesconto(double valorOriginal, int quantidade) {
-        if (quantidade >= 6) {
-            return valorOriginal * 0.90;
-        } else if (quantidade >= 3) {
-            return valorOriginal * 0.95;
-        }
-        return valorOriginal;
+    public double getPrecoBase() {
+        return getPreco();
     }
 
-    public int percentualDesconto(int quantidade) {
-        if (quantidade >= 6) return 10;
-        if (quantidade >= 3) return 5;
-        return 0;
+    @Override
+    public int getPercentualDesconto() {
+        int quantidade = getQuantidadeAtual();
+        int percentual;
+
+        if (quantidade >= 6) {
+            percentual = 10;
+        } else if (quantidade >= 3) {
+            percentual = 5;
+        } else {
+            percentual = 0;
+        }
+
+        return Math.min(percentual, TETO_DESCONTO);
     }
 
     @Override
