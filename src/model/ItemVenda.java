@@ -36,6 +36,7 @@ public class ItemVenda {
         this.produto = produto;
         this.quantidade = quantidade;
         this.precoUnitario = produto.getPreco();
+        this.produto.setQuantidadeAtual(quantidade);
     }
 
     public double calcularSubtotal() {
@@ -43,15 +44,15 @@ public class ItemVenda {
 
         if (produto instanceof CalculadoraDesconto) {
             CalculadoraDesconto calc = (CalculadoraDesconto) produto;
-            return calc.calcularDesconto(valorBruto, quantidade);
+            return calc.calcularDesconto(valorBruto);
         }
 
         return valorBruto;
     }
 
     public int getPercentualDesconto() {
-        if (produto instanceof ProdutoEletronico) {
-            return ((ProdutoEletronico) produto).percentualDesconto(quantidade);
+        if (produto instanceof CalculadoraDesconto) {
+            return ((CalculadoraDesconto) produto).getPercentualDesconto();
         }
         return 0;
     }
