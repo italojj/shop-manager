@@ -564,10 +564,11 @@ public class MenuPrincipal {
 
     private LocalDate lerData(String msg) {
         while (true) {
+            System.out.print(msg);
             if (!sc.hasNextLine()) {
                 return LocalDate.now();
             }
-            String entrada = lerTexto(msg).replace("/", "-");
+            String entrada = sc.nextLine().trim().replace("/", "-");
             try {
                 return LocalDate.parse(entrada, DATA_BR);
             } catch (Exception e) {
@@ -579,10 +580,11 @@ public class MenuPrincipal {
     // Lê um nome: não pode ser vazio nem conter números.
     private String lerNome(String msg) {
         while (true) {
+            System.out.print(msg);
             if (!sc.hasNextLine()) {
                 return "";
             }
-            String nome = lerTexto(msg);
+            String nome = sc.nextLine().trim();
             if (!nome.isEmpty() && !nome.matches(".*\\d.*")) {
                 return nome;
             }
@@ -593,10 +595,11 @@ public class MenuPrincipal {
     // Lê um CPF: aceita com ou sem pontuação, mas exige exatamente 11 dígitos.
     private String lerCpf(String msg) {
         while (true) {
+            System.out.print(msg);
             if (!sc.hasNextLine()) {
                 return "";
             }
-            String digitos = lerTexto(msg).replaceAll("\\D", "");
+            String digitos = sc.nextLine().trim().replaceAll("\\D", "");
             if (digitos.length() == 11) {
                 return digitos;
             }
