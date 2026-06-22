@@ -1,6 +1,7 @@
 package model;
 
 import enums.StatusVenda;
+import exception.EstoqueInsuficienteException;
 import exception.TransicaoEstadoInvalidaException;
 
 import java.time.LocalDateTime;
@@ -40,10 +41,23 @@ public class Venda {
         itens.remove(item);
     }
 
-    public void finalizar() throws TransicaoEstadoInvalidaException {
+    public void finalizar() throws TransicaoEstadoInvalidaException, EstoqueInsuficienteException {
         if (status != StatusVenda.ABERTA) {
             throw new TransicaoEstadoInvalidaException(
                     "Não é possível finalizar uma venda com o status " + status + ".");
+        }
+        if (itens.isEmpty()) {
+            throw new IllegalStateException("Não é possível finalizar uma venda sem itens.");
+        }
+        for (ItemVenda item : itens) {
+            if (!item.getProduto().temEstoqueSuficiente(item.getQuantidade())) {
+                throw new EstoqueInsuficienteException(
+                        "Estoque insuficiente para \"" + item.getProduto().getNome()
+                                + "\" ao finalizar a venda.");
+            }
+        }
+        for (ItemVenda item : itens) {
+            item.getProduto().baixarEstoque(item.getQuantidade());
         }
         status = StatusVenda.FINALIZADA;
     }
@@ -56,12 +70,16 @@ public class Venda {
         status = StatusVenda.CANCELADA;
     }
 
-    public double calcularTotal() {
+    public double getValorTotal() {
         double total = 0;
         for (ItemVenda item : itens) {
             total += item.calcularSubtotal();
         }
         return total;
+    }
+
+    public double calcularTotal() {
+        return getValorTotal();
     }
 
     public int getIdVenda() {
