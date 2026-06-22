@@ -69,6 +69,7 @@ public class GerenciadorDados<T> {
 
     public void adicionar(T entidade) {
         lista.add(entidade);
+        salvar();
     }
 
     public T buscarPorId(int id) throws EntidadeNaoEncontradaException {
@@ -89,6 +90,7 @@ public class GerenciadorDados<T> {
         for (int i = 0; i < lista.size(); i++) {
             if (idExtractor.apply(lista.get(i)) == id) {
                 lista.set(i, entidade);
+                salvar();
                 return;
             }
         }
@@ -102,12 +104,13 @@ public class GerenciadorDados<T> {
             throw new EntidadeNaoEncontradaException("Não foi possível encontrar a entidade de id " + id
                     + " para remover.");
         }
+        salvar();
     }
 
     public void salvar() {
         File dir = new File("data");
         if (!dir.exists()) {
-            dir.mkdir();
+            dir.mkdirs();
         }
         Type listType = TypeToken.getParameterized(List.class, tipo).getType();
         try (Writer writer = new FileWriter(caminhoArquivo)) {
@@ -130,6 +133,8 @@ public class GerenciadorDados<T> {
             }
         } catch (Exception e) {
             System.err.println("Houve um erro ao carregar o arquivo " + caminhoArquivo + ": " + e.getMessage());
+            // Preserva o arquivo problemático em .bak para não perdê-lo num save posterior.
+            arquivo.renameTo(new File(caminhoArquivo + ".bak"));
         }
     }
 }
