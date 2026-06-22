@@ -3,6 +3,7 @@ package model;
 import interfaces.CalculadoraDesconto;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class ProdutoAlimenticio extends Produto implements CalculadoraDesconto {
@@ -70,7 +71,7 @@ public class ProdutoAlimenticio extends Produto implements CalculadoraDesconto {
     public String getDescricao() {
         return String.format("Alimentício | Categoria: %s | Validade: %s%s",
                 categoria,
-                dataValidade,
+                dataValidade.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                 estaVencido() ? " [VENCIDO]" : "");
     }
 

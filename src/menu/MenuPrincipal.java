@@ -10,6 +10,7 @@ import model.*;
 import repository.GerenciadorDados;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -24,6 +25,9 @@ public class MenuPrincipal {
     // Lê a entrada usando o MESMO charset do console (System.out.charset()),
     // assim acentos digitados pelo usuário não viram "?" (Cp1252/Cp850 x UTF-8).
     private final Scanner sc = new Scanner(System.in, System.out.charset());
+
+    // Formato de data brasileiro (DD-MM-AAAA) para entrada e exibição no menu.
+    private static final DateTimeFormatter DATA_BR = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public MenuPrincipal(GerenciadorDados<Cliente> clientes,
             GerenciadorDados<Funcionario> funcionarios,
@@ -72,8 +76,8 @@ public class MenuPrincipal {
         System.out.println("1 - Cadastrar | 2 - Listar | 3 - Editar | 4 - Remover | 0 - Voltar");
         switch (lerInt("Escolha: ")) {
             case 1 -> {
-                String nome = lerTexto("Nome: ");
-                String cpf = lerTexto("CPF: ");
+                String nome = lerNome("Nome: ");
+                String cpf = lerCpf("CPF: ");
                 try {
                     validarCpfUnico(cpf);
                 } catch (CpfDuplicadoException e) {
@@ -92,7 +96,7 @@ public class MenuPrincipal {
                 if (clientes.listarTodos().isEmpty())
                     System.out.println("(nenhum cliente)");
                 for (Cliente c : clientes.listarTodos())
-                    System.out.printf("[%d] %s - CPF %s%n", c.getIdCliente(), c.getNome(), c.getCpf());
+                    System.out.printf("[%d] %s - CPF %s%n", c.getIdCliente(), c.getNome(), formatarCpf(c.getCpf()));
             }
             case 3 -> {
                 Cliente c = selecionarCliente();
@@ -129,8 +133,12 @@ public class MenuPrincipal {
         switch (lerInt("Escolha: ")) {
             case 1 -> {
                 int tipo = lerInt("1 - Vendedor | 2 - Gerente: ");
-                String nome = lerTexto("Nome: ");
-                String cpf = lerTexto("CPF: ");
+                if (tipo != 1 && tipo != 2) {
+                    System.out.println("Tipo inválido. Escolha 1 ou 2. Cadastro cancelado.");
+                    return;
+                }
+                String nome = lerNome("Nome: ");
+                String cpf = lerCpf("CPF: ");
                 try {
                     validarCpfUnico(cpf);
                 } catch (CpfDuplicadoException e) {
@@ -161,7 +169,7 @@ public class MenuPrincipal {
                 for (Funcionario f : funcionarios.listarTodos()) {
                     String papel = (f instanceof Vendedor) ? "Vendedor" : "Gerente";
                     System.out.printf("[%d] %s (%s) - CPF %s%n",
-                            f.getIdFuncionario(), f.getNome(), papel, f.getCpf());
+                            f.getIdFuncionario(), f.getNome(), papel, formatarCpf(f.getCpf()));
                 }
             }
             case 3 -> {
@@ -262,6 +270,10 @@ public class MenuPrincipal {
         switch (lerInt("Escolha: ")) {
             case 1 -> {
                 int tipo = lerInt("1 - Eletrônico | 2 - Alimentício: ");
+                if (tipo != 1 && tipo != 2) {
+                    System.out.println("Tipo inválido. Escolha 1 ou 2. Cadastro cancelado.");
+                    return;
+                }
                 String nome = lerTexto("Nome: ");
                 double preco = lerDouble("Preco: ");
                 int estoque = lerInt("Quantidade em estoque: ");
@@ -272,7 +284,7 @@ public class MenuPrincipal {
                     int garantia = lerInt("Garantia (meses): ");
                     produtos.adicionar(new ProdutoEletronico(id, nome, preco, estoque, forn, marca, garantia));
                 } else {
-                    LocalDate validade = lerData("Validade (AAAA-MM-DD): ");
+                    LocalDate validade = lerData("Validade (DD-MM-AAAA): ");
                     String categoria = lerTexto("Categoria: ");
                     produtos.adicionar(new ProdutoAlimenticio(id, nome, preco, estoque, forn, validade, categoria));
                 }
@@ -392,6 +404,8 @@ public class MenuPrincipal {
                 v.cancelar();
                 System.out.println("Venda CANCELADA.");
             }
+            vendas.salvar();
+            produtos.salvar();
         } catch (TransicaoEstadoInvalidaException | EstoqueInsuficienteException e) {
             System.out.println(e.getMessage());
         }
@@ -550,12 +564,53 @@ public class MenuPrincipal {
 
     private LocalDate lerData(String msg) {
         while (true) {
+            if (!sc.hasNextLine()) {
+                return LocalDate.now();
+            }
+            String entrada = lerTexto(msg).replace("/", "-");
             try {
-                return LocalDate.parse(lerTexto(msg));
+                return LocalDate.parse(entrada, DATA_BR);
             } catch (Exception e) {
-                System.out.println("Data inválida. Use AAAA-MM-DD.");
+                System.out.println("Data inválida. Use DD-MM-AAAA (ex: 31-12-2026).");
             }
         }
+    }
+
+    // Lê um nome: não pode ser vazio nem conter números.
+    private String lerNome(String msg) {
+        while (true) {
+            if (!sc.hasNextLine()) {
+                return "";
+            }
+            String nome = lerTexto(msg);
+            if (!nome.isEmpty() && !nome.matches(".*\\d.*")) {
+                return nome;
+            }
+            System.out.println("Nome inválido. Não pode ser vazio nem conter números.");
+        }
+    }
+
+    // Lê um CPF: aceita com ou sem pontuação, mas exige exatamente 11 dígitos.
+    private String lerCpf(String msg) {
+        while (true) {
+            if (!sc.hasNextLine()) {
+                return "";
+            }
+            String digitos = lerTexto(msg).replaceAll("\\D", "");
+            if (digitos.length() == 11) {
+                return digitos;
+            }
+            System.out.println("CPF inválido. Digite exatamente 11 dígitos (somente números).");
+        }
+    }
+
+    // Exibe o CPF com máscara 000.000.000-00.
+    private String formatarCpf(String cpf) {
+        if (cpf == null || cpf.length() != 11) {
+            return cpf;
+        }
+        return cpf.substring(0, 3) + "." + cpf.substring(3, 6) + "."
+                + cpf.substring(6, 9) + "-" + cpf.substring(9);
     }
 
     // Limpa a tela via códigos ANSI (suportados pelo Windows Terminal / PowerShell).
