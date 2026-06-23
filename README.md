@@ -117,7 +117,7 @@ Produto (abstrata)
 └── calcularDesconto(double valor): double
 ```
 
-O diagrama UML completo está em [`docs/DiagramaUML.png`](docs/DiagramaUML.png).
+O diagrama UML completo está em [`docs/DiagramaUML.png`](docs/DiagramaUML.svg).
 
 ---
 
