@@ -4,35 +4,34 @@ import java.util.List;
 
 public class Vendedor extends Funcionario {
     
-    private float comissaoPorVenda;
-    
-    public float getComissaoPorVenda() {
+    private double comissaoPorVenda;
+
+    public double getComissaoPorVenda() {
         return comissaoPorVenda;
     }
 
-    public void setComissaoPorVenda(float comissaoPorVenda) {
+    public void setComissaoPorVenda(double comissaoPorVenda) {
         this.comissaoPorVenda = comissaoPorVenda;
     }
 
-    public float calcularComissao() {
-        return this.comissaoPorVenda; 
+    public double calcularComissao() {
+        return this.comissaoPorVenda;
     }
 
     @Override
-    public float calcularRemuneracao(List<Venda> vendas) {
+    public double calcularRemuneracao(List<Venda> vendas) {
         if (vendas == null || vendas.isEmpty()) {
             return getSalarioBase();
         }
 
-        float totalVendas = 0.0f;
-        
+        double totalVendas = 0.0;
+
         for (Venda venda : vendas) {
             totalVendas += venda.getValorTotal();
         }
 
-        float valorComissaoFinal = totalVendas * this.comissaoPorVenda;
+        double valorComissaoFinal = totalVendas * this.comissaoPorVenda;
 
-        
         return getSalarioBase() + valorComissaoFinal;
     }
 }

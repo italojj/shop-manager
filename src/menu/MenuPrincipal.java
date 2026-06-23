@@ -145,15 +145,15 @@ public class MenuPrincipal {
                     System.out.println(e.getMessage());
                     return;
                 }
-                float salario = (float) lerDouble("Salário base: ");
+                double salario = lerDouble("Salário base: ");
                 Funcionario f;
                 if (tipo == 1) {
                     Vendedor v = new Vendedor();
-                    v.setComissaoPorVenda((float) lerDouble("Comissão por venda (ex: 0.05 = 5%): "));
+                    v.setComissaoPorVenda(lerDouble("Comissão por venda (ex: 0.05 = 5%): "));
                     f = v;
                 } else {
                     Gerente g = new Gerente();
-                    g.setBonusMensal((float) lerDouble("Bônus mensal: "));
+                    g.setBonusMensal(lerDouble("Bônus mensal: "));
                     f = g;
                 }
                 f.setNome(nome);
@@ -179,11 +179,11 @@ public class MenuPrincipal {
                 String novoNome = lerTexto("Novo nome '" + f.getNome() + "': ");
                 if (!novoNome.isEmpty())
                     f.setNome(novoNome);
-                f.setSalarioBase((float) lerDouble("Novo salário base: "));
+                f.setSalarioBase(lerDouble("Novo salário base: "));
                 if (f instanceof Vendedor v) {
-                    v.setComissaoPorVenda((float) lerDouble("Nova comissão por venda: "));
+                    v.setComissaoPorVenda(lerDouble("Nova comissão por venda: "));
                 } else if (f instanceof Gerente g) {
-                    g.setBonusMensal((float) lerDouble("Novo bônus mensal: "));
+                    g.setBonusMensal(lerDouble("Novo bônus mensal: "));
                 }
                 try {
                     funcionarios.atualizar(f);
@@ -425,7 +425,7 @@ public class MenuPrincipal {
                 doFuncionario.add(v);
             }
         }
-        float r = f.calcularRemuneracao(doFuncionario);
+        double r = f.calcularRemuneracao(doFuncionario);
         System.out.printf("Remuneração de %s: R$ %.2f%n", f.getNome(), r);
     }
 

@@ -4,7 +4,7 @@ import java.util.List;
 
 public abstract class Funcionario extends Pessoa {
     private int idFuncionario;
-    private float salarioBase;
+    private double salarioBase;
 
     public int getIdFuncionario() {
         return idFuncionario;
@@ -14,13 +14,13 @@ public abstract class Funcionario extends Pessoa {
         this.idFuncionario = idFuncionario;
     }
 
-    public float getSalarioBase() {
+    public double getSalarioBase() {
         return salarioBase;
     }
 
-    public void setSalarioBase(float salarioBase) {
+    public void setSalarioBase(double salarioBase) {
         this.salarioBase = salarioBase;
     }
 
-    public abstract float calcularRemuneracao(List<Venda> vendas);
+    public abstract double calcularRemuneracao(List<Venda> vendas);
 }
