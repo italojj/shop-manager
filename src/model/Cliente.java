@@ -6,7 +6,8 @@ import java.util.ArrayList;
 public class Cliente extends Pessoa {
     private int idCliente;
     private LocalDate dataCadastro;
-    private List<Venda> historicoCompras = new ArrayList<>();
+    // transient: evita ciclo Cliente <-> Venda na serialização (StackOverflow no Gson).
+    private transient List<Venda> historicoCompras = new ArrayList<>();
 
     public int getIdCliente() {
         return idCliente;
@@ -25,6 +26,9 @@ public class Cliente extends Pessoa {
     }
 
     public List<Venda> getHistoricoCompras() {
+        if (historicoCompras == null) {
+            historicoCompras = new ArrayList<>();
+        }
         return historicoCompras;
     }
 
