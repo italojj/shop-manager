@@ -2,8 +2,10 @@ import menu.MenuPrincipal;
 import model.Cliente;
 import model.Fornecedor;
 import model.Funcionario;
+import model.ItemVenda;
 import model.Produto;
 import model.Venda;
+import exception.EntidadeNaoEncontradaException;
 import repository.GerenciadorDados;
 
 public class Main {
@@ -21,6 +23,19 @@ public class Main {
         produtos.carregar();
         fornecedores.carregar();
         vendas.carregar();
+
+        // Re-vincula os itens das vendas aos produtos do catálogo: o Gson
+        // desserializa uma CÓPIA do produto dentro de cada venda, então sem isto
+        // a baixa de estoque ao finalizar uma venda carregada não chegaria ao catálogo.
+        for (Venda venda : vendas.listarTodos()) {
+            for (ItemVenda item : venda.getItens()) {
+                try {
+                    item.setProduto(produtos.buscarPorId(item.getProduto().getId()));
+                } catch (EntidadeNaoEncontradaException e) {
+                    // Produto removido do catálogo: mantém a cópia embutida na venda.
+                }
+            }
+        }
 
         MenuPrincipal menu = new MenuPrincipal(clientes, funcionarios, produtos, fornecedores, vendas);
         menu.iniciar();

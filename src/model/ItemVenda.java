@@ -36,13 +36,15 @@ public class ItemVenda {
         this.produto = produto;
         this.quantidade = quantidade;
         this.precoUnitario = produto.getPreco();
-        this.produto.setQuantidadeAtual(quantidade);
     }
 
     public double calcularSubtotal() {
         double valorBruto = precoUnitario * quantidade;
 
         if (produto instanceof CalculadoraDesconto) {
+            // O desconto deve refletir a quantidade DESTE item, não o estado
+            // residual do produto (que é compartilhado entre vendas/itens).
+            produto.setQuantidadeAtual(quantidade);
             CalculadoraDesconto calc = (CalculadoraDesconto) produto;
             return calc.calcularDesconto(valorBruto);
         }
@@ -52,6 +54,7 @@ public class ItemVenda {
 
     public int getPercentualDesconto() {
         if (produto instanceof CalculadoraDesconto) {
+            produto.setQuantidadeAtual(quantidade);
             return ((CalculadoraDesconto) produto).getPercentualDesconto();
         }
         return 0;
@@ -59,6 +62,11 @@ public class ItemVenda {
 
     public Produto getProduto() {
         return produto;
+    }
+
+    // Permite re-vincular ao produto do catálogo após carregar do JSON.
+    public void setProduto(Produto produto) {
+        this.produto = produto;
     }
 
     public int getQuantidade() {
